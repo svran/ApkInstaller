@@ -2,3 +2,4 @@
 /WSAInstallTool/bin
 /WSAInstallTool/obj
 .vs/*
+*.exe

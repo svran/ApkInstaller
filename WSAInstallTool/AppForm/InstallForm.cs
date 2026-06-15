@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -242,10 +242,10 @@ namespace WSAInstallTool
             if (PreferenceUtil.Instance.GetWSAConnect() && !string.IsNullOrEmpty(PreferenceUtil.Instance.GetWSAConnectIpAddress()))
             {
                 string ipAddress = PreferenceUtil.Instance.GetWSAConnectIpAddress();
-                string cmdConnectResult = CMDUtil.ExecCMD("adb.exe", "connect " + ipAddress);
+                string cmdConnectResult = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), "connect " + ipAddress);
             }
             
-            string cmdRunResult = CMDUtil.ExecCMD("adb.exe", "devices").Trim();
+            string cmdRunResult = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), "devices").Trim();
             //deviceResult = deviceResult.Replace("List of devices attached", "")
             //.Replace("* daemon not running. starting it", "")
             //.Replace("* daemon not running; starting now at tcp:5037", "")
@@ -353,7 +353,7 @@ namespace WSAInstallTool
         {
             CmdCallbackDelegate callback = obj as CmdCallbackDelegate;
             string installCommand = PreferenceUtil.Instance.GetInstallMethodCommand();
-            string result = CMDUtil.ExecCMD("adb.exe", extraCommand + "install " + installCommand + " \"" + apkPath + "\"");
+            string result = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), extraCommand + "install " + installCommand + " \"" + apkPath + "\"");
             Debug.WriteLine("[InstallForm][InstallApkCMD] command => " + result);
             callback(result);
         }

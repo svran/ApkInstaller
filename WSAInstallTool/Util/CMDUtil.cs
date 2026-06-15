@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +9,7 @@ namespace WSAInstallTool
 {
     class CMDUtil
     {
+        private static string AdbPath { get { return Util.CommonUtil.GetAdbPath(); } }
         //执行命令行命令,获取输出结果
         //cmd_filename: DOS程序文件名
         //arguments: 命令行参数
@@ -32,12 +33,7 @@ namespace WSAInstallTool
         /// <param name="batName"></param>
         public static void ExecBat(string batName)
         {
-            //Process process = new Process();
-            //process.StartInfo.FileName = batName;
-            //process.Start();
-            //cmd为想要执行的进程名，workingDir为它的所在路径，如果在windows\system32可以为空
             var pStartInfo = new System.Diagnostics.ProcessStartInfo(batName);
-            pStartInfo.Verb = "runas";//设置该启动动作，会以管理员权限运行进程
             pStartInfo.CreateNoWindow = false;
             pStartInfo.UseShellExecute = true;
             pStartInfo.RedirectStandardError = false;
@@ -53,14 +49,14 @@ namespace WSAInstallTool
         public static void StartAdbServer(object state)
         {
             Console.WriteLine("[CMDUtil][StartAdbServer] starting adb server...");
-            string result = CMDUtil.ExecCMD("adb.exe", "start-server");
+            string result = CMDUtil.ExecCMD(AdbPath, "start-server");
             Console.WriteLine("[CMDUtil][StartAdbServer] adb server result: " + result);
         }
 
         public static void StopAdbServer(object state)
         {
             Console.WriteLine("[CMDUtil][StopAdbServer] stoping adb server...");
-            string result = CMDUtil.ExecCMD("adb.exe", "kill-server");
+            string result = CMDUtil.ExecCMD(AdbPath, "kill-server");
             Console.WriteLine("[CMDUtil][StopAdbServer] adb server result: " + result);
         }
     }

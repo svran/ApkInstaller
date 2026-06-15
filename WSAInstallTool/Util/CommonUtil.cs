@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +13,40 @@ namespace WSAInstallTool.Util
 {
     class CommonUtil
     {
+        private static string _adbPath = null;
+
+        public static string GetAdbPath()
+        {
+            if (_adbPath != null) return _adbPath;
+
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("where", "adb.exe");
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                Process p = Process.Start(psi);
+                string output = p.StandardOutput.ReadToEnd().Trim();
+                p.WaitForExit();
+                if (p.ExitCode == 0 && !string.IsNullOrEmpty(output))
+                {
+                    string firstLine = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                    if (File.Exists(firstLine))
+                    {
+                        _adbPath = firstLine;
+                        Debug.WriteLine("[CommonUtil][GetAdbPath] found adb in PATH: " + _adbPath);
+                        return _adbPath;
+                    }
+                }
+            }
+            catch { }
+
+            _adbPath = Path.Combine(GetCurrentStartupPath(), "adb.exe");
+            Debug.WriteLine("[CommonUtil][GetAdbPath] using bundled adb: " + _adbPath);
+            return _adbPath;
+        }
+
         public static long GetCurrentTimeStamps()
         {
             TimeSpan ts = DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, 0);

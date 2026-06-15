@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,8 +17,16 @@ namespace WSAInstallTool
 {
     public partial class MainForm : Form
     {
+        private string[] elevatedArgs;
+
         public MainForm()
         {
+            InitializeComponent();
+        }
+
+        public MainForm(string[] args)
+        {
+            this.elevatedArgs = args;
             InitializeComponent();
         }
 
@@ -110,7 +118,11 @@ namespace WSAInstallTool
 
         private void installButton_Click(object sender, EventArgs e)
         {
-            //1.设置关联APK文件
+            if (elevatedArgs == null && !Program.IsAdministrator())
+            {
+                Program.RestartElevated(Program.ARG_INSTALL_ASSOC);
+                return;
+            }
             associatedApk();
             CMDUtil.ExecBat("install.bat");
             MessageBox.Show(LangUtil.Instance.GetInstallFinished());
@@ -118,16 +130,16 @@ namespace WSAInstallTool
 
         private void uninstallButton_Click(object sender, EventArgs e)
         {
+            if (elevatedArgs == null && !Program.IsAdministrator())
+            {
+                Program.RestartElevated(Program.ARG_UNINSTALL_ASSOC);
+                return;
+            }
             CMDUtil.ExecBat("uninstall.bat");
             CMDUtil.StopAdbServer(1);
             RegistryKey hklm = Registry.ClassesRoot;
-            hklm.DeleteSubKeyTree(".apk", false);  //为true时，删除的注册表不存在时抛出异常；当为false时不抛出异常。
+            hklm.DeleteSubKeyTree(".apk", false);
             hklm.DeleteSubKeyTree("HYWINXYZWSATOOL", false);
-            //hklm.DeleteSubKey(@"HYWINXYZWSATOOL\shell\open\command", false);
-            //hklm.DeleteSubKey(@"HYWINXYZWSATOOL\shell\open", false);
-            //hklm.DeleteSubKey(@"HYWINXYZWSATOOL\shell", false);
-            //hklm.DeleteSubKey(@"HYWINXYZWSATOOL", false);
-           
             hklm.Close();
             MessageBox.Show(LangUtil.Instance.GetUninstallFinished());   
         }
@@ -145,12 +157,21 @@ namespace WSAInstallTool
         /// <param name="e"></param>
         private void installApkIconButton_Click(object sender, EventArgs e)
         {
-            //2.显示自身APK图标
+            if (elevatedArgs == null && !Program.IsAdministrator())
+            {
+                Program.RestartElevated(Program.ARG_INSTALL_ASSOC);
+                return;
+            }
             CMDUtil.ExecBat("install.bat");
         }
 
         private void uninsallApkIconButton_Click(object sender, EventArgs e)
         {
+            if (elevatedArgs == null && !Program.IsAdministrator())
+            {
+                Program.RestartElevated(Program.ARG_UNINSTALL_ASSOC);
+                return;
+            }
             CMDUtil.ExecBat("uninstall.bat");
             associatedApk();
         }
@@ -166,7 +187,6 @@ namespace WSAInstallTool
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            // 每次进入这个页面都初始化黑名单
             CommonUtil.InitBlackListBackground();
             associateApkGroup.Text = LangUtil.Instance.GetAssociateApk();
             installButton.Text = LangUtil.Instance.GetOneKeyInstall();
@@ -174,6 +194,18 @@ namespace WSAInstallTool
             aboutLinkLabel.Text = LangUtil.Instance.GetAbout();
             readMeLabel.Text = LangUtil.Instance.GetReadMe();
             settingLinkLabel.Text = LangUtil.Instance.GetSettingFormTitle();
+
+            if (elevatedArgs != null && elevatedArgs.Length > 0)
+            {
+                if (elevatedArgs[0] == Program.ARG_INSTALL_ASSOC)
+                {
+                    installButton.PerformClick();
+                }
+                else if (elevatedArgs[0] == Program.ARG_UNINSTALL_ASSOC)
+                {
+                    uninstallButton.PerformClick();
+                }
+            }
         }
 
         private void settingLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
