@@ -303,6 +303,8 @@ namespace WSAInstallTool
 
             installButton.Enabled = false;
             installButton.Text = LangUtil.Instance.GetAppInstalling();
+            deviceComboBox.Visible = false;
+            deviceLabel.Visible = false;
             installProgressBar.Visible = true;
 
             CmdCallbackDelegate installCallback = InstallApkComplete;
@@ -346,6 +348,8 @@ namespace WSAInstallTool
                 installButton.Enabled = true;
                 installButton.Text = LangUtil.Instance.GetAppInstall();
                 installProgressBar.Visible = false;
+                deviceComboBox.Visible = true;
+                deviceLabel.Visible = true;
 
                 if (!string.IsNullOrEmpty(result) && result.Replace("Performing Streamed Install", "").Trim() == "Success")
                 {
