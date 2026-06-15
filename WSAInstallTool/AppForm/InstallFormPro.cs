@@ -50,36 +50,29 @@ namespace WSAInstallTool
 
         private void InstallFormPro_Load(object sender, EventArgs e)
         {
-            // 提前开启Adb服务
             InitAdbServer();
             InitLanguage();
             Console.WriteLine("dir == " + Environment.CurrentDirectory);
-            //MessageBox.Show("" + System.Threading.Thread.GetDomain().BaseDirectory);
-            //apkPath = @"C:\Users\luhao\Downloads\stardance_1.0.3_Beta.apk";
+
             if (args != null && args.Length > 0)
             {
                 apkPath = args[0];
             }
 
-            //string apkPath = "C:\\Users\\haoyu\\Desktop\\106_f0c49f2b285b39d89d87a3c5747ea155.apk";
-
             string result = CMDUtil.ExecCMD("aapt.exe", "dump badging \"" + apkPath + "\"");
 
             aaptParseUtil = new AAPTParseUtil(result);
 
-            // 包名
             packageNameLabel.Text = LangUtil.Instance.GetPackageName() +
                 (string.IsNullOrEmpty(aaptParseUtil.GetPackageName()) ? LangUtil.Instance.GetAppUnknown() : aaptParseUtil.GetPackageName());
             versionNameLabel.Text = LangUtil.Instance.GetVersionName() +
                 (string.IsNullOrEmpty(aaptParseUtil.GetVersionName()) ? LangUtil.Instance.GetAppUnknown() : aaptParseUtil.GetVersionName()); ;
             minVersionLabel.Text = LangUtil.Instance.GetMinVersionName() + aaptParseUtil.getMinSupportVersion();
 
-            // 判断APK状态
             BadApkDelegate badApkDelegate = CheckApkSafetyComplete;
             Thread ts = new Thread(CheckApkSafety);
             ts.Start(badApkDelegate);
 
-            // 权限
             StringBuilder permissionStringBuilder = new StringBuilder();
             permissionList = aaptParseUtil.GetPermissionDetailList();
             if (permissionList.Count > 10)
@@ -102,13 +95,10 @@ namespace WSAInstallTool
             permissionLabel.Text = LangUtil.Instance.GetPersimissions() + "\n"
                 + (string.IsNullOrEmpty(permissionStringBuilder.ToString().Trim()) ? LangUtil.Instance.GetNothing() : permissionStringBuilder.ToString().Trim());
 
-            // APP 名称
             appNameLabel.Text = string.IsNullOrEmpty(aaptParseUtil.GetAppName()) ? LangUtil.Instance.GetAppUnknown() : aaptParseUtil.GetAppName();
 
-            // APP 大小
             spaceLabel.Text = LangUtil.Instance.GetSize() + GetApkSpace();
 
-            // 获取APK图标
             try
             {
                 string iconPath = aaptParseUtil.GetApkIcon(apkPath);
@@ -120,13 +110,84 @@ namespace WSAInstallTool
                 Debug.WriteLine("load logo error => " + ex.Message);
             }
 
-            // Hash值
-            //MessageBox.Show(HashUtil.GetSha256Hash(apkPath));
+            ThreadPool.QueueUserWorkItem(LoadDevices);
         }
 
         private void InitAdbServer()
         {
             ThreadPool.QueueUserWorkItem(CMDUtil.StartAdbServer);
+        }
+
+        private void LoadDevices(object state)
+        {
+            try
+            {
+                Thread.Sleep(1000);
+                string cmdRunResult = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), "devices").Trim();
+                string[] splitCmdRunResult = Regex.Split(cmdRunResult, "List of devices attached");
+                if (splitCmdRunResult.Length != 2)
+                {
+                    this.Invoke(new MethodInvoker(delegate()
+                    {
+                        deviceLabel.Text = "未检测到设备";
+                        deviceComboBox.Enabled = false;
+                        installButton.Enabled = false;
+                    }));
+                    return;
+                }
+                string deviceResult = splitCmdRunResult[1].Trim();
+                if (string.IsNullOrEmpty(deviceResult))
+                {
+                    this.Invoke(new MethodInvoker(delegate()
+                    {
+                        deviceLabel.Text = "未检测到设备";
+                        deviceComboBox.Enabled = false;
+                        installButton.Enabled = false;
+                    }));
+                    return;
+                }
+                string[] devices = deviceResult.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                List<string> devicesList = new List<string>();
+                foreach (string device in devices)
+                {
+                    string[] deviceNames = device.Split('\t');
+                    if (deviceNames.Length == 2)
+                    {
+                        devicesList.Add(deviceNames[0]);
+                    }
+                }
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    deviceComboBox.Items.Clear();
+                    if (devicesList.Count == 0)
+                    {
+                        deviceLabel.Text = "未检测到设备";
+                        deviceComboBox.Enabled = false;
+                        installButton.Enabled = false;
+                    }
+                    else
+                    {
+                        foreach (string d in devicesList)
+                        {
+                            deviceComboBox.Items.Add(d);
+                        }
+                        deviceComboBox.SelectedIndex = 0;
+                        deviceComboBox.Enabled = true;
+                        installButton.Enabled = true;
+                        deviceLabel.Text = "选择设备:";
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("[InstallFormPro][LoadDevices] error => " + ex.Message);
+                this.Invoke(new MethodInvoker(delegate()
+                {
+                    deviceLabel.Text = "设备加载失败";
+                    deviceComboBox.Enabled = false;
+                    installButton.Enabled = false;
+                }));
+            }
         }
 
 
@@ -231,110 +292,22 @@ namespace WSAInstallTool
         /// <param name="e"></param>
         private void installButton_Click(object sender, EventArgs e)
         {
-            extraCommand = "";
-
-            string adbStartServerPattern = "\\*[\\w:; ]*";
-
-            // 开启adb服务和查找设备列表分开执行
-            CMDUtil.StartAdbServer(1);
-            string cmdRunResult = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), "devices").Trim();
-            //deviceResult = deviceResult.Replace("List of devices attached", "")
-            //.Replace("* daemon not running. starting it", "")
-            //.Replace("* daemon not running; starting now at tcp:5037", "")
-            //.Replace("* daemon started successfully *", "")
-            //.Trim();
-            //cmdRunResult = Regex.Replace(cmdRunResult, adbStartServerPattern, "").Trim();
-            string[] splitCmdRunResult = Regex.Split(cmdRunResult, "List of devices attached");
-            Console.WriteLine("[InstallFormPro][installButton_Click][cmdRunResult] " + cmdRunResult);
-            if (splitCmdRunResult.Length != 2)
+            if (deviceComboBox.SelectedItem == null)
             {
-                MessageBox.Show("Error:" + cmdRunResult);
+                MessageBox.Show("请先选择设备");
                 return;
             }
-            Console.WriteLine("[InstallFormPro][installButton_Click] exist devices :" + splitCmdRunResult[1].Trim());
-            string deviceResult = splitCmdRunResult[1].Trim();
-            //MessageBox.Show(deviceResult);
-            Debug.WriteLine("[InstallFormPro][installButton_Click] deviceResult = " + deviceResult);
-            if (string.IsNullOrEmpty(deviceResult))
-            {
-                MessageBox.Show(LangUtil.Instance.GetNoAnyAndroidDevice());
-                return;
-            }
-            string[] devices = deviceResult.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            // 1.只存在一台设备
-            if (devices != null && devices.Length == 1)
-            {
-                CmdCallbackDelegate installCallback = InstallApkComplete;
 
-                installButton.Enabled = false;
-                installButton.Text = LangUtil.Instance.GetAppInstalling();
-                installProgressBar.Visible = true;
-                extraCommand = "";
+            string selectedDevice = deviceComboBox.SelectedItem.ToString();
+            extraCommand = string.IsNullOrEmpty(selectedDevice) ? "" : "-s " + selectedDevice + " ";
 
-                //CMDUtil.ExecCMD("adb.exe", "install " + apkPath);
-                //ThreadStart ts = new ThreadStart(InstallApkCMD);
+            installButton.Enabled = false;
+            installButton.Text = LangUtil.Instance.GetAppInstalling();
+            installProgressBar.Visible = true;
 
-                Thread thread = new Thread(InstallApkCMD);
-                thread.Start(installCallback);
-
-                //MessageBox.Show(result);
-            }
-            else if (devices != null && devices.Length > 1)
-            {
-                Console.WriteLine("[many devices]" + devices[0] + "....." + devices[1]);
-                //2. 存在两台及以上的设备
-                List<string> devicesList = new List<string>();
-                foreach (string device in devices)
-                {
-                    //Debug.WriteLine(device);
-
-                    string[] deviceNames = device.Split('\t');
-                    //Debug.WriteLine(deviceNames.Length);
-                    if (deviceNames.Length == 2)
-                    {
-
-                        devicesList.Add(deviceNames[0]);
-                    }
-                }
-
-
-
-                using (DeviceSelectForm deviceSelectForm = new DeviceSelectForm(devicesList))
-                {
-                    //MessageBox.Show(deviceSelectForm.ShowDialog() + "");
-                    //Console.WriteLine("....." + deviceSelectForm.ShowDialog());
-                    if (deviceSelectForm.ShowDialog() == DialogResult.Cancel)
-                    {
-
-                        if (string.IsNullOrEmpty(deviceSelectForm.resultDevice)) return;
-
-                        // 安装选择的设备
-                        CmdCallbackDelegate installCallback = InstallApkComplete;
-
-                        installButton.Enabled = false;
-                        installButton.Text = LangUtil.Instance.GetAppInstalling();
-                        installProgressBar.Visible = true;
-                        extraCommand = "-s " + deviceSelectForm.resultDevice + " ";
-
-                        Debug.Write("extraCommand => " + extraCommand);
-
-                        //CMDUtil.ExecCMD("adb.exe", "install " + apkPath);
-                        //ThreadStart ts = new ThreadStart(InstallApkCMD);
-
-                        Thread thread = new Thread(InstallApkCMD);
-                        thread.Start(installCallback);
-                    }
-                }
-
-            }
-            else
-            {
-                // 3. 其它情况
-                MessageBox.Show(deviceResult);
-            }
-            //Console.WriteLine(devices[0]);
-
-            //CMDUtil.ExecCMD("adb.exe", "install " + apkPath);
+            CmdCallbackDelegate installCallback = InstallApkComplete;
+            Thread thread = new Thread(InstallApkCMD);
+            thread.Start(installCallback);
         }
 
         /// <summary>

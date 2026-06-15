@@ -1,4 +1,4 @@
-﻿namespace WSAInstallTool
+namespace WSAInstallTool
 {
     partial class InstallFormPro
     {
@@ -42,6 +42,8 @@
             this.settingButton = new System.Windows.Forms.Button();
             this.iconPictureBox = new System.Windows.Forms.PictureBox();
             this.realPackageNameLabel = new System.Windows.Forms.Label();
+            this.deviceComboBox = new System.Windows.Forms.ComboBox();
+            this.deviceLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.badApkPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iconPictureBox)).BeginInit();
             this.SuspendLayout();
@@ -187,12 +189,35 @@
             this.realPackageNameLabel.Size = new System.Drawing.Size(0, 24);
             this.realPackageNameLabel.TabIndex = 11;
             // 
+            // deviceComboBox
+            // 
+            this.deviceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.deviceComboBox.FormattingEnabled = true;
+            this.deviceComboBox.Location = new System.Drawing.Point(390, 637);
+            this.deviceComboBox.Margin = new System.Windows.Forms.Padding(4);
+            this.deviceComboBox.Name = "deviceComboBox";
+            this.deviceComboBox.Size = new System.Drawing.Size(466, 32);
+            this.deviceComboBox.TabIndex = 12;
+            this.deviceComboBox.Enabled = false;
+            // 
+            // deviceLabel
+            // 
+            this.deviceLabel.AutoSize = true;
+            this.deviceLabel.Location = new System.Drawing.Point(190, 645);
+            this.deviceLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.deviceLabel.Name = "deviceLabel";
+            this.deviceLabel.Size = new System.Drawing.Size(190, 24);
+            this.deviceLabel.TabIndex = 13;
+            this.deviceLabel.Text = "设备加载中...";
+            // 
             // InstallFormPro
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.ClientSize = new System.Drawing.Size(1104, 706);
+            this.Controls.Add(this.deviceLabel);
+            this.Controls.Add(this.deviceComboBox);
             this.Controls.Add(this.realPackageNameLabel);
             this.Controls.Add(this.badApkPictureBox);
             this.Controls.Add(this.settingButton);
@@ -238,6 +263,8 @@
         private System.Windows.Forms.Button settingButton;
         private System.Windows.Forms.PictureBox badApkPictureBox;
         private System.Windows.Forms.Label realPackageNameLabel;
+        private System.Windows.Forms.ComboBox deviceComboBox;
+        private System.Windows.Forms.Label deviceLabel;
     }
 }
 
