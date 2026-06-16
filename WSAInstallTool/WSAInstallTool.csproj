@@ -103,6 +103,7 @@
       <DependentUpon>SettingForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Util\AAPTParseUtil.cs" />
+    <Compile Include="Util\BundleFormatUtil.cs" />
     <Compile Include="AppForm\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>

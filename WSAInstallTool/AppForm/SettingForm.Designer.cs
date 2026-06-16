@@ -1,4 +1,4 @@
-﻿namespace WSAInstallTool.AppForm
+namespace WSAInstallTool.AppForm
 {
     partial class SettingForm
     {
@@ -60,6 +60,7 @@
             this.wechatLabel = new System.Windows.Forms.Label();
             this.donateLabel = new System.Windows.Forms.Label();
             this.thankLabel = new System.Windows.Forms.Label();
+            this.optimizedByLabel = new System.Windows.Forms.Label();
             this.settingTabControl.SuspendLayout();
             this.adbTabPage.SuspendLayout();
             this.connectGroupBox.SuspendLayout();
@@ -290,12 +291,8 @@
             // 
             // aboutTabPage
             // 
+            this.aboutTabPage.Controls.Add(this.optimizedByLabel);
             this.aboutTabPage.Controls.Add(this.thankLabel);
-            this.aboutTabPage.Controls.Add(this.donateLabel);
-            this.aboutTabPage.Controls.Add(this.wechatLabel);
-            this.aboutTabPage.Controls.Add(this.alipayLabel);
-            this.aboutTabPage.Controls.Add(this.wechatPictureBox);
-            this.aboutTabPage.Controls.Add(this.alipayPicctureBox);
             this.aboutTabPage.Controls.Add(this.giteeLinkLabel);
             this.aboutTabPage.Controls.Add(this.giteeLabel);
             this.aboutTabPage.Controls.Add(this.githubLinkLabel);
@@ -323,6 +320,7 @@
             this.wechatPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.wechatPictureBox.TabIndex = 7;
             this.wechatPictureBox.TabStop = false;
+            this.wechatPictureBox.Visible = false;
             // 
             // alipayPicctureBox
             // 
@@ -334,6 +332,7 @@
             this.alipayPicctureBox.Size = new System.Drawing.Size(228, 216);
             this.alipayPicctureBox.TabIndex = 6;
             this.alipayPicctureBox.TabStop = false;
+            this.alipayPicctureBox.Visible = false;
             // 
             // giteeLinkLabel
             // 
@@ -389,6 +388,16 @@
             this.authorLabel.TabIndex = 1;
             this.authorLabel.Text = "作者";
             // 
+            // optimizedByLabel
+            // 
+            this.optimizedByLabel.AutoSize = true;
+            this.optimizedByLabel.Location = new System.Drawing.Point(44, 164);
+            this.optimizedByLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.optimizedByLabel.Name = "optimizedByLabel";
+            this.optimizedByLabel.Size = new System.Drawing.Size(130, 24);
+            this.optimizedByLabel.TabIndex = 12;
+            this.optimizedByLabel.Text = "优化作者: Svran";
+            // 
             // versionLabel
             // 
             this.versionLabel.AutoSize = true;
@@ -417,6 +426,7 @@
             this.alipayLabel.Size = new System.Drawing.Size(82, 24);
             this.alipayLabel.TabIndex = 8;
             this.alipayLabel.Text = "支付宝";
+            this.alipayLabel.Visible = false;
             // 
             // wechatLabel
             // 
@@ -426,6 +436,7 @@
             this.wechatLabel.Size = new System.Drawing.Size(58, 24);
             this.wechatLabel.TabIndex = 9;
             this.wechatLabel.Text = "微信";
+            this.wechatLabel.Visible = false;
             // 
             // donateLabel
             // 
@@ -435,6 +446,7 @@
             this.donateLabel.Size = new System.Drawing.Size(130, 24);
             this.donateLabel.TabIndex = 10;
             this.donateLabel.Text = "请我吃辣条";
+            this.donateLabel.Visible = false;
             // 
             // thankLabel
             // 
@@ -516,5 +528,6 @@
         private System.Windows.Forms.Label alipayLabel;
         private System.Windows.Forms.Label donateLabel;
         private System.Windows.Forms.Label thankLabel;
+        private System.Windows.Forms.Label optimizedByLabel;
     }
 }

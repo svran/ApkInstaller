@@ -43,6 +43,16 @@ namespace WSAInstallTool
                 DeleteClassesRootRegistryKey(".apk");
 
             }
+            // 删除.xapk（如果存在）
+            if (IsRegistryKeyExist(".xapk"))
+            {
+                DeleteClassesRootRegistryKey(".xapk");
+            }
+            // 删除.apks（如果存在）
+            if (IsRegistryKeyExist(".apks"))
+            {
+                DeleteClassesRootRegistryKey(".apks");
+            }
             // 创建
             CreateAssociationProgram();
         }
@@ -73,10 +83,28 @@ namespace WSAInstallTool
             }
 
             hkSoftWare.SetValue("", "\"" + softwarePath + exeName + "\" \"%1\"", RegistryValueKind.String);
-            
+
+            // 设置图标路径
+            string iconPath = softwarePath + "3185263_android_app_circle_smartphone_design_icon.ico";
+
             // 2.创建.apk
             RegistryKey apkSoftWare = hklm.CreateSubKey(@".apk");
             apkSoftWare.SetValue("", "HYWINXYZWSATOOL", RegistryValueKind.String);
+            RegistryKey apkIcon = hklm.CreateSubKey(@".apk\DefaultIcon");
+            apkIcon.SetValue("", iconPath, RegistryValueKind.String);
+
+            // 3.创建.xapk
+            RegistryKey xapkSoftWare = hklm.CreateSubKey(@".xapk");
+            xapkSoftWare.SetValue("", "HYWINXYZWSATOOL", RegistryValueKind.String);
+            RegistryKey xapkIcon = hklm.CreateSubKey(@".xapk\DefaultIcon");
+            xapkIcon.SetValue("", iconPath, RegistryValueKind.String);
+
+            // 4.创建.apks
+            RegistryKey apksSoftWare = hklm.CreateSubKey(@".apks");
+            apksSoftWare.SetValue("", "HYWINXYZWSATOOL", RegistryValueKind.String);
+            RegistryKey apksIcon = hklm.CreateSubKey(@".apks\DefaultIcon");
+            apksIcon.SetValue("", iconPath, RegistryValueKind.String);
+
             hklm.Close();
             hkSoftWare.Close();
         }
@@ -139,6 +167,8 @@ namespace WSAInstallTool
             CMDUtil.StopAdbServer(1);
             RegistryKey hklm = Registry.ClassesRoot;
             hklm.DeleteSubKeyTree(".apk", false);
+            hklm.DeleteSubKeyTree(".xapk", false);
+            hklm.DeleteSubKeyTree(".apks", false);
             hklm.DeleteSubKeyTree("HYWINXYZWSATOOL", false);
             hklm.Close();
             MessageBox.Show(LangUtil.Instance.GetUninstallFinished());   

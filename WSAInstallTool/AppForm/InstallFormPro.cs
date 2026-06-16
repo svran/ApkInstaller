@@ -48,6 +48,8 @@ namespace WSAInstallTool
             InitializeComponent();
         }
 
+        private BundleFormatUtil bundleUtil;
+
         private void InstallFormPro_Load(object sender, EventArgs e)
         {
             InitAdbServer();
@@ -57,6 +59,20 @@ namespace WSAInstallTool
             if (args != null && args.Length > 0)
             {
                 apkPath = args[0];
+            }
+
+            // Check if it's a bundle format (xapk/apks)
+            if (BundleFormatUtil.IsBundleFormat(apkPath))
+            {
+                bundleUtil = new BundleFormatUtil(apkPath);
+                if (!bundleUtil.Extract())
+                {
+                    MessageBox.Show("Failed to extract bundle file: " + Path.GetFileName(apkPath));
+                    this.Close();
+                    return;
+                }
+                // Use the base APK for parsing
+                apkPath = bundleUtil.BaseApkPath;
             }
 
             string result = CMDUtil.ExecCMD("aapt.exe", "dump badging \"" + apkPath + "\"");
@@ -320,7 +336,18 @@ namespace WSAInstallTool
         {
             CmdCallbackDelegate callback = obj as CmdCallbackDelegate;
             string installCommand = PreferenceUtil.Instance.GetInstallMethodCommand();
-            string result = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), extraCommand + "install " + installCommand + " \"" + apkPath + "\"");
+            string result;
+
+            if (bundleUtil != null)
+            {
+                // Use bundle install command (install-multiple for OBB/splits)
+                result = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), extraCommand + bundleUtil.GetInstallCommand());
+            }
+            else
+            {
+                result = CMDUtil.ExecCMD(CommonUtil.GetAdbPath(), extraCommand + "install " + installCommand + " \"" + apkPath + "\"");
+            }
+
             Debug.WriteLine("[InstallFormPro][InstallApkCMD] command => " + result);
             callback(result);
         }
@@ -405,5 +432,10 @@ namespace WSAInstallTool
             installButton.Text = LangUtil.Instance.GetAppInstall();
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            bundleUtil?.Cleanup();
+        }
     }
 }
